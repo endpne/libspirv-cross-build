@@ -55,6 +55,8 @@ private class BuildSpirvCross: BaseBuild {
             "-DSPIRV_CROSS_ENABLE_C_API=ON",
             "-DSPIRV_CROSS_SHARED=OFF",
             "-DSPIRV_CROSS_STATIC=ON",
+            "-DCMAKE_OSX_ARCHITECTURES=\(arch.rawValue)",
+            "-DCMAKE_SYSTEM_PROCESSOR=\(arch.rawValue)"
         ]
     }
 
