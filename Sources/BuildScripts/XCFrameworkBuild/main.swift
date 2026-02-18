@@ -4,177 +4,99 @@ do {
     let options = try ArgumentOptions.parse(CommandLine.arguments)
     try Build.performCommand(options)
 
-    try BuildUnibreak().buildALL()
-    try BuildFreetype().buildALL()
-    try BuildFribidi().buildALL()
-    try BuildHarfbuzz().buildALL()
-    try BuildASS().buildALL()
+    // 只执行 SpirvCross 的构建
+    try BuildSpirvCross().buildALL()
 } catch {
     print("ERROR: \(error.localizedDescription)")
     exit(1)
 }
 
-
 enum Library: String, CaseIterable {
-    case libunibreak, libfreetype, libfribidi, libharfbuzz, libass
+    case libspirv_cross
+    
     var version: String {
         switch self {
-        case .libunibreak:
-            return "libunibreak_6_1"
-        case .libfreetype:
-            // VER-2-10-1以上版本需要依赖libbrotli库，或指定--with-brotli=no
-            return "VER-2-12-1"
-        case .libfribidi:
-            return "v1.0.12"
-        case .libharfbuzz:
-            return "8.1.1"
-        case .libass:       // depend libunibreak libfreetype libfribidi libharfbuzz
-            return "0.17.3"
+        case .libspirv_cross:
+            // 这里填写你需要的 SPIRV-Cross 版本 tag
+            return "vulkan-sdk-1.3.268.0" 
         }
     }
 
     var url: String {
         switch self {
-        case .libunibreak:
-            return "https://github.com/adah1972/libunibreak"
-        case .libfreetype:
-            return "https://github.com/freetype/freetype"
-        case .libfribidi:
-            return "https://github.com/fribidi/fribidi"
-        case .libharfbuzz:
-            return "https://github.com/harfbuzz/harfbuzz"
-        case .libass:
-            return "https://github.com/libass/libass"
+        case .libspirv_cross:
+            return "https://github.com/KhronosGroup/SPIRV-Cross"
         }
     }
 
-    // for generate Package.swift
+    // 生成 Package.swift 用，即使不发布 Package 也可以留着
     var targets : [PackageTarget] {
         switch self {
-        case .libunibreak:
-            return  [
+        case .libspirv_cross:
+            return [
                 .target(
-                    name: "Libunibreak",
-                    url: "https://github.com/mpvkit/libass-build/releases/download/\(BaseBuild.options.releaseVersion)/Libunibreak.xcframework.zip",
-                    checksum: "https://github.com/mpvkit/libass-build/releases/download/\(BaseBuild.options.releaseVersion)/Libunibreak.xcframework.checksum.txt"
-                ),
-            ]
-        case .libfreetype:
-            return  [
-                .target(
-                    name: "Libfreetype",
-                    url: "https://github.com/mpvkit/libass-build/releases/download/\(BaseBuild.options.releaseVersion)/Libfreetype.xcframework.zip",
-                    checksum: "https://github.com/mpvkit/libass-build/releases/download/\(BaseBuild.options.releaseVersion)/Libfreetype.xcframework.checksum.txt"
-                ),
-            ]
-        case .libfribidi:
-            return  [
-                .target(
-                    name: "Libfribidi",
-                    url: "https://github.com/mpvkit/libass-build/releases/download/\(BaseBuild.options.releaseVersion)/Libfribidi.xcframework.zip",
-                    checksum: "https://github.com/mpvkit/libass-build/releases/download/\(BaseBuild.options.releaseVersion)/Libfribidi.xcframework.checksum.txt"
-                ),
-            ]
-        case .libharfbuzz:
-            return  [
-                .target(
-                    name: "Libharfbuzz",
-                    url: "https://github.com/mpvkit/libass-build/releases/download/\(BaseBuild.options.releaseVersion)/Libharfbuzz.xcframework.zip",
-                    checksum: "https://github.com/mpvkit/libass-build/releases/download/\(BaseBuild.options.releaseVersion)/Libharfbuzz.xcframework.checksum.txt"
-                ),
-            ]
-        case .libass:
-            return  [
-                .target(
-                    name: "Libass",
-                    url: "https://github.com/mpvkit/libass-build/releases/download/\(BaseBuild.options.releaseVersion)/Libass.xcframework.zip",
-                    checksum: "https://github.com/mpvkit/libass-build/releases/download/\(BaseBuild.options.releaseVersion)/Libass.xcframework.checksum.txt"
+                    name: "Libspirv_cross",
+                    url: "https://github.com/endpne/libspirv-cross-build/releases/download/\(BaseBuild.options.releaseVersion)/Libspirv_cross.xcframework.zip",
+                    checksum: "https://github.com/endpne/libspirv-cross-build/releases/download/\(BaseBuild.options.releaseVersion)/Libspirv_cross.xcframework.checksum.txt"
                 ),
             ]
         }
     }
 }
 
-
-private class BuildASS: BaseBuild {
+private class BuildSpirvCross: BaseBuild {
     init() {
-        super.init(library: .libass)
-    }
-
-    override func arguments(platform : PlatformType, arch : ArchType) -> [String] {
-        [
-            "-Dlibunibreak=enabled",
-            "-Dcoretext=enabled",
-            "-Dfontconfig=disabled",
-            "-Ddirectwrite=disabled",
-            "-Dasm=disabled",
-            "-Dtest=false",
-            "-Dprofile=false",
-        ]
-    }
-}
-
-
-private class BuildUnibreak: BaseBuild {
-    init() {
-        super.init(library: .libunibreak)
+        super.init(library: .libspirv_cross)
     }
 
     override func arguments(platform: PlatformType, arch: ArchType) -> [String] {
-        [
-            "--enable-static",
-            "--disable-shared",
-            "--disable-fast-install",
-            "--disable-dependency-tracking",
-            "--host=\(platform.host(arch: arch))",
+        return [
+            "-DSPIRV_CROSS_CLI=OFF",
+            "-DSPIRV_CROSS_ENABLE_TESTS=OFF",
+            "-DSPIRV_CROSS_ENABLE_C_API=ON",
+            "-DSPIRV_CROSS_SHARED=OFF",
+            "-DSPIRV_CROSS_STATIC=ON",
         ]
     }
-}
 
-private class BuildFreetype: BaseBuild {
-    init() {
-        super.init(library: .libfreetype)
+    override func build(platform: PlatformType, arch: ArchType) throws {
+        // 1. 标准编译
+        try super.build(platform: platform, arch: arch)
+
+        // 2. 生成适配 Meson 的 pkg-config 文件
+        try generatePkgConfig(platform: platform, arch: arch)
     }
 
-    override func arguments(platform : PlatformType, arch : ArchType) -> [String] {
-        [
-            "-Dzlib=enabled",
-            "-Dharfbuzz=disabled", 
-            "-Dbzip2=disabled", 
-            "-Dmmap=disabled",
-            "-Dpng=disabled",
-            "-Dbrotli=disabled",
-        ]
-    }
-}
+    private func generatePkgConfig(platform: PlatformType, arch: ArchType) throws {
+        let prefix = thinDir(platform: platform, arch: arch)
+        let pkgConfigDir = prefix + ["lib", "pkgconfig"]
+        
+        // 确保目录存在
+        if !FileManager.default.fileExists(atPath: pkgConfigDir.path) {
+            try FileManager.default.createDirectory(at: pkgConfigDir, withIntermediateDirectories: true, attributes: nil)
+        }
 
+        // 生成 spirv-cross-c-shared.pc
+        // 这是为了欺骗 Meson，让它以为找到了 Shared 库，实际上链接的是静态库
+        let pcPath = pkgConfigDir + "spirv-cross-c-shared.pc"
+        
+        // 显式列出所有需要的静态库
+        let libs = "-lspirv-cross-c -lspirv-cross-core -lspirv-cross-glsl -lspirv-cross-cpp -lspirv-cross-reflect -lspirv-cross-msl -lspirv-cross-hlsl"
 
-private class BuildFribidi: BaseBuild {
-    init() {
-        super.init(library: .libfribidi)
-    }
+        let content = """
+        prefix=\(prefix.path)
+        exec_prefix=${prefix}
+        libdir=${prefix}/lib
+        includedir=${prefix}/include/spirv_cross
 
-    override func arguments(platform : PlatformType, arch : ArchType) -> [String] {
-        [
-            "-Ddeprecated=false",
-            "-Ddocs=false",
-            "-Dbin=false",
-            "-Dtests=false",
-        ]
-    }
-}
+        Name: spirv-cross-c-shared
+        Description: SPIR-V Cross (Static Build with Shared Shim)
+        Version: \(library.version)
+        Libs: -L${libdir} \(libs)
+        Cflags: -I${includedir}
+        """
 
-private class BuildHarfbuzz: BaseBuild {
-    init() {
-        super.init(library: .libharfbuzz)
-    }
-
-    override func arguments(platform : PlatformType, arch : ArchType) -> [String] {
-        [
-            "-Dglib=disabled",
-            "-Dfreetype=disabled",
-            "-Ddocs=disabled",
-            "-Dtests=disabled",
-        ]
+        try content.write(to: pcPath, atomically: true, encoding: .utf8)
+        print("✅ [Fix] Generated spirv-cross-c-shared.pc at \(pcPath.path)")
     }
 }
