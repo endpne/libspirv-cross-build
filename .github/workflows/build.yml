@@ -47,7 +47,7 @@ jobs:
           file_path = './Sources/BuildScripts/XCFrameworkBuild/main.swift'
           with open(file_path, 'r', encoding='utf-8') as file:
             content = file.read()
-          buildVersion = re.search(r'(case ..libspirv_cross[^"]+?)"(.+?)"', content).group(2)
+          buildVersion = re.search(r'(case .libspirv_cross[^"]+?)"(.+?)"', content).group(2)
           print(f'build version: {buildVersion}')
           releaseVersion = '${{ env.RELEASE_VERSION }}' or normalize_version(buildVersion)
           print(f'release version: {releaseVersion}')
