@@ -18,7 +18,7 @@ enum Library: String, CaseIterable {
         switch self {
         case .libspirv_cross:
             // 这里填写你需要的 SPIRV-Cross 版本 tag
-            return "vulkan-sdk-1.3.268.0" 
+            return "vulkan-sdk-1.4.309.0" 
         }
     }
 
