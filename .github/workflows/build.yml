@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Release tag name (default libass version)'
+        description: 'Release tag name (default spirv-cross version)'
         default: ''
 
 
